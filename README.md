@@ -15,6 +15,8 @@ Infrastructure IA locale sous Ubuntu avec GPU NVIDIA.
 │  │                                               │  │
 │  │  llama.cpp ── 127.0.0.1:8080  (GPU)          │  │
 │  │       │                                       │  │
+│  │  Hermes Agent ── 127.0.0.1:8642 / :9119      │  │
+│  │       │                                       │  │
 │  │  OpenWebUI ── 127.0.0.1:3000                 │  │
 │  │  Watchtower (mises à jour auto)               │  │
 │  │                                               │  │
@@ -58,7 +60,29 @@ bash scripts/install_ollama.sh
 
 Ollama est configuré pour écouter sur `0.0.0.0:11434` afin d'être accessible depuis Docker.
 
-### 4. Ajouter des modèles pour llama.cpp
+### 4. Configurer Hermes Agent
+
+Créer le fichier `.env` à partir du template :
+
+```bash
+cp .env.example .env
+# Éditer .env et remplacer HERMES_API_KEY par une vraie clé
+openssl rand -hex 32   # génère une clé
+```
+
+Initialiser la config Hermes (étape interactive, à faire une seule fois) :
+
+```bash
+mkdir -p ~/.hermes
+docker run -it --rm -v ~/.hermes:/opt/data nousresearch/hermes-agent setup
+```
+
+Pendant le setup, configurer le modèle avec l'URL de llama.cpp :
+- Provider : `custom`
+- Base URL : `http://llamacpp:8080/v1`
+- API key : `none`
+
+### 5. Ajouter des modèles pour llama.cpp
 
 Déposer les fichiers `.gguf` dans le dossier `models/` à la racine du dépôt :
 
@@ -67,7 +91,7 @@ Déposer les fichiers `.gguf` dans le dossier `models/` à la racine du dépôt 
 cp ~/Downloads/mon-modele.gguf models/
 ```
 
-### 5. Lancer les services core
+### 6. Lancer les services core
 
 ```bash
 docker compose up -d
@@ -77,6 +101,8 @@ docker compose up -d
 |---|---|
 | OpenWebUI | http://localhost:3000 |
 | llama.cpp (API) | http://localhost:8080 |
+| Hermes (API) | http://localhost:8642 |
+| Hermes (dashboard) | http://localhost:9119 |
 
 ## Services optionnels
 
@@ -104,6 +130,7 @@ docker compose --profile comfyui --profile whisper up -d
 |---|---|---|
 | Ollama | Hôte (natif) | Oui |
 | llama.cpp | Docker | Oui |
+| Hermes Agent | Docker | Non |
 | OpenWebUI | Docker | Non |
 | Watchtower | Docker | Non |
 | ComfyUI | Docker (optionnel) | Oui |

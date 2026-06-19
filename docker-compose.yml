@@ -57,6 +57,36 @@ services:
     depends_on:
       - llamacpp
 
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes
+    restart: unless-stopped
+    command: gateway run
+    ports:
+      - "127.0.0.1:8642:8642"
+      - "127.0.0.1:9119:9119"
+    volumes:
+      - ~/.hermes:/opt/data
+    environment:
+      HERMES_DASHBOARD: "1"
+      HERMES_DASHBOARD_BASIC_AUTH_USERNAME: ${HERMES_DASHBOARD_USER}
+      HERMES_DASHBOARD_BASIC_AUTH_PASSWORD: ${HERMES_DASHBOARD_PASSWORD}
+      HERMES_DASHBOARD_BASIC_AUTH_SECRET: ${HERMES_DASHBOARD_SECRET}
+      API_SERVER_ENABLED: "true"
+      API_SERVER_HOST: "0.0.0.0"
+      API_SERVER_PORT: "8642"
+      API_SERVER_KEY: ${HERMES_API_KEY}
+      API_SERVER_CORS_ORIGINS: "'*'"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - llamacpp
+
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
