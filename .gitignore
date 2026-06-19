@@ -9,3 +9,7 @@
 *.pem
 *.p12
 secrets/
+
+# Modèles llama.cpp (binaires lourds)
+models/*.gguf
+models/**/*.gguf

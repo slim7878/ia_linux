@@ -13,6 +13,8 @@ Infrastructure IA locale sous Ubuntu avec GPU NVIDIA.
 │  ┌────┴──────────────────────────────────────────┐  │
 │  │                    Docker                     │  │
 │  │                                               │  │
+│  │  llama.cpp ── 127.0.0.1:8080  (GPU)          │  │
+│  │       │                                       │  │
 │  │  OpenWebUI ── 127.0.0.1:3000                 │  │
 │  │  Watchtower (mises à jour auto)               │  │
 │  │                                               │  │
@@ -23,6 +25,8 @@ Infrastructure IA locale sous Ubuntu avec GPU NVIDIA.
 ```
 
 Ollama tourne sur l'hôte pour un accès GPU direct et optimal.
+llama.cpp tourne dans Docker avec accès GPU NVIDIA et sert les modèles `.gguf` via une API compatible OpenAI.
+OpenWebUI agrège les deux backends.
 Tous les ports sont liés à `127.0.0.1` (accès local uniquement).
 
 ## Prérequis
@@ -54,7 +58,16 @@ bash scripts/install_ollama.sh
 
 Ollama est configuré pour écouter sur `0.0.0.0:11434` afin d'être accessible depuis Docker.
 
-### 4. Lancer les services core
+### 4. Ajouter des modèles pour llama.cpp
+
+Déposer les fichiers `.gguf` dans le dossier `models/` à la racine du dépôt :
+
+```bash
+# Exemple
+cp ~/Downloads/mon-modele.gguf models/
+```
+
+### 5. Lancer les services core
 
 ```bash
 docker compose up -d
@@ -63,6 +76,7 @@ docker compose up -d
 | Service | URL |
 |---|---|
 | OpenWebUI | http://localhost:3000 |
+| llama.cpp (API) | http://localhost:8080 |
 
 ## Services optionnels
 
@@ -89,6 +103,7 @@ docker compose --profile comfyui --profile whisper up -d
 | Composant | Déploiement | GPU |
 |---|---|---|
 | Ollama | Hôte (natif) | Oui |
+| llama.cpp | Docker | Oui |
 | OpenWebUI | Docker | Non |
 | Watchtower | Docker | Non |
 | ComfyUI | Docker (optionnel) | Oui |

@@ -2,6 +2,44 @@ services:
 
   # --- Core ---
 
+  llamacpp:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    container_name: llamacpp
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./models:/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: >
+      --models-dir /models/
+      --models-max 1
+      --n-gpu-layers 99
+      --parallel 2
+      --flash-attn auto
+      --ctx-size 8192
+      --mmap
+      --cache-type-k q8_0
+      --cache-type-v q8_0
+      --jinja
+      --reasoning-budget 0
+      --temp 0.8
+      --top-p 0.95
+      --top-k 40
+      --min-p 0.05
+      --presence-penalty 1.1
+      --repeat-penalty 1.1
+      --sleep-idle-seconds 30
+      --no-ui
+      --port 8080
+      --host 0.0.0.0
+
   openwebui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: openwebui
@@ -12,8 +50,12 @@ services:
       - openwebui_data:/app/backend/data
     environment:
       OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OPENAI_API_BASE_URL: http://llamacpp:8080/v1
+      OPENAI_API_KEY: none
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      - llamacpp
 
   watchtower:
     image: containrrr/watchtower
