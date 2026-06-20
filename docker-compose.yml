@@ -80,6 +80,7 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_ALLOWED_USERS: ${TELEGRAM_ALLOWED_USERS}
       TELEGRAM_HOME_CHANNEL: ${TELEGRAM_HOME_CHANNEL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     deploy:
       resources:
         limits:
