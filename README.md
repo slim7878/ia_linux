@@ -77,7 +77,24 @@ mkdir -p ~/.hermes
 docker run -it --rm -v ~/.hermes:/opt/data nousresearch/hermes-agent setup
 ```
 
-Pendant le setup, configurer le modèle avec l'URL de llama.cpp :
+Pendant le setup, choisir un provider. Deux options :
+
+**Option A — Ollama (recommandé, accès GPU direct)**
+
+Éditer `~/.hermes/config.yaml` et remplacer les deux premières lignes :
+
+```yaml
+model: 'openai/qwen3.6:27b'   # remplacer par le modèle souhaité
+providers:
+  openai:
+    base_url: http://host.docker.internal:11434/v1
+    api_key: none
+```
+
+Lister les modèles disponibles : `ollama list`
+
+**Option B — llama.cpp**
+
 - Provider : `custom`
 - Base URL : `http://llamacpp:8080/v1`
 - API key : `none`
