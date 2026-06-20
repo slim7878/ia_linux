@@ -81,6 +81,7 @@ services:
       TELEGRAM_ALLOWED_USERS: ${TELEGRAM_ALLOWED_USERS}
       TELEGRAM_HOME_CHANNEL: ${TELEGRAM_HOME_CHANNEL:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CLICKUP_API_TOKEN: ${CLICKUP_API_TOKEN:-}
     deploy:
       resources:
         limits:
