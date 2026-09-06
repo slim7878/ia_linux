@@ -89,8 +89,6 @@ services:
           cpus: "2.0"
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    depends_on:
-      - llamacpp
 
   watchtower:
     image: containrrr/watchtower
