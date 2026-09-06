@@ -132,14 +132,85 @@ docker compose --profile comfyui up -d
 # Whisper (transcription audio)
 docker compose --profile whisper up -d
 
-# Tout en même temps
+# Qwen3.8-27B (voir section dédiée ci-dessous)
+docker compose --profile qwen38 up -d
+
+# Plusieurs profils en même temps
 docker compose --profile comfyui --profile whisper up -d
 ```
 
 | Service | URL | Profile |
 |---|---|---|
+| Qwen3.8-27B (vLLM) | http://localhost:18020 | `qwen38` |
 | ComfyUI | http://localhost:7860 | `comfyui` |
 | Whisper | http://localhost:9000 | `whisper` |
+
+## Qwen3.8-27B (vLLM, optimisé RTX 3090)
+
+Sert le modèle [Qwen3.8-27B](https://github.com/syv-ai/qwen38-27b-rtx3090) via vLLM avec des optimisations spécifiques à la RTX 3090 (spéculation MTP/DFlash2, cache de préfixe, contexte 64k–240k tokens). API compatible OpenAI sur le port 18020.
+
+> **Important :** ce service utilise tout le GPU. Il est **incompatible avec `llamacpp` en simultané**. Arrêter l'un avant de lancer l'autre.
+
+### Premier démarrage
+
+Le container télécharge le modèle depuis Hugging Face et le requantize à la première exécution (~20 Go, prévoir 20–40 min selon la connexion). Les données sont persistées dans les volumes Docker `qwen38_models` et `qwen38_cache` — les démarrages suivants sont immédiats.
+
+```bash
+# 1. Arrêter llamacpp pour libérer la VRAM
+docker stop llamacpp
+
+# 2. Lancer qwen38 (premier démarrage long)
+docker compose --profile qwen38 up -d
+
+# 3. Suivre le téléchargement / la requantization
+docker logs -f qwen38
+```
+
+Le modèle est prêt quand les logs affichent `Uvicorn running on http://0.0.0.0:18020`.
+
+### Configuration (variables dans `.env`)
+
+| Variable | Défaut | Description |
+|---|---|---|
+| `QWEN38_API_KEY` | _(vide = pas d'auth)_ | Clé d'authentification pour l'API |
+| `QWEN38_SPEC` | _(vide = MTP)_ | Moteur de spéculation : `dflash2` recommandé en usage solo |
+| `QWEN38_PREFIX_CACHE` | _(vide)_ | Mettre `1` pour activer le cache de préfixe (recommandé) |
+| `QWEN38_DFLASH_TOKENS` | `7` | Tokens draft par étape ; `15` si les réponses citent souvent le prompt |
+
+Ajouter dans `.env` (et `.env.example`) :
+
+```bash
+# Qwen3.8-27B (optionnel)
+QWEN38_API_KEY=
+QWEN38_SPEC=dflash2
+QWEN38_PREFIX_CACHE=1
+QWEN38_DFLASH_TOKENS=7
+```
+
+### Performances (RTX 3090, usage solo)
+
+| Configuration | Vitesse décodage |
+|---|---|
+| Défaut (MTP) | ~120 tok/s |
+| `SPEC=dflash2` | ~130 tok/s |
+| `SPEC=dflash2` + document long (reproduction) | jusqu'à ~382 tok/s |
+
+### Intégration OpenWebUI
+
+OpenWebUI ne supporte qu'un seul backend OpenAI via variable d'environnement. Pour ajouter qwen38 comme connexion supplémentaire :
+
+1. Ouvrir http://localhost:3000
+2. **Admin Panel → Settings → Connections**
+3. Ajouter une connexion OpenAI :
+   - URL : `http://qwen38:18020/v1`
+   - Clé API : valeur de `QWEN38_API_KEY` (ou `none` si vide)
+
+### Basculer vers llamacpp
+
+```bash
+docker stop qwen38
+docker compose up -d llamacpp openwebui hermes
+```
 
 ## Stack complète
 

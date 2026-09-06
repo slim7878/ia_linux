@@ -102,7 +102,39 @@ services:
       DOCKER_API_VERSION: "1.41"
     command: --interval 86400 --cleanup
 
-  # --- Optionnels (activer avec : docker compose --profile comfyui up -d) ---
+  # --- Optionnels (activer avec : docker compose --profile <nom> up -d) ---
+
+  # Qwen3.8-27B via vLLM, optimisé RTX 3090 (port 18020)
+  # ATTENTION : incompatible avec llamacpp en simultané — arrêter llamacpp avant de lancer ce profil.
+  # Premier démarrage : téléchargement + requantization du modèle (~20 Go, 20-40 min).
+  # Variables d'environnement (toutes optionnelles, voir .env.example) :
+  #   QWEN38_API_KEY    — clé d'auth pour l'API (laisser vide = pas d'auth)
+  #   QWEN38_SPEC       — moteur de spéculation : "" (MTP, défaut) ou "dflash2" (recommandé solo)
+  #   QWEN38_PREFIX_CACHE — "1" pour activer le cache de préfixe (recommandé solo)
+  #   QWEN38_DFLASH_TOKENS — nb de tokens draft par étape : "7" (défaut) ou "15" (si réponses citent le prompt)
+  qwen38:
+    image: ghcr.io/syv-ai/qwen38-27b-rtx3090:latest
+    container_name: qwen38
+    profiles: [qwen38]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18020:18020"
+    volumes:
+      - qwen38_models:/app/models
+      - qwen38_cache:/cache
+    ipc: host
+    environment:
+      VLLM_API_KEY: ${QWEN38_API_KEY:-}
+      SPEC: ${QWEN38_SPEC:-}
+      PREFIX_CACHE: ${QWEN38_PREFIX_CACHE:-}
+      DFLASH_TOKENS: ${QWEN38_DFLASH_TOKENS:-}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   comfyui:
     image: ghcr.io/ai-dock/comfyui:latest-cuda
@@ -141,3 +173,5 @@ services:
 volumes:
   openwebui_data:
   comfyui_data:
+  qwen38_models:
+  qwen38_cache:
