@@ -13,10 +13,12 @@ Infrastructure IA locale sous Ubuntu avec GPU NVIDIA.
 │  ┌────┴──────────────────────────────────────────┐  │
 │  │                    Docker                     │  │
 │  │                                               │  │
-│  │  llama.cpp ── 127.0.0.1:8080  (GPU)          │  │
-│  │       │                                       │  │
+│  │  llama.cpp ── 127.0.0.1:8080  (GPU)  ──┐    │  │
+│  │    OU                                   ├──  │  │
+│  │  Qwen3.8-27B ── 127.0.0.1:18020 (GPU) ─┘    │  │
+│  │       (exclusifs — un seul à la fois)         │  │
+│  │                                               │  │
 │  │  Hermes Agent ── 127.0.0.1:8642 / :9119      │  │
-│  │       │                                       │  │
 │  │  OpenWebUI ── 127.0.0.1:3000                 │  │
 │  │  Watchtower (mises à jour auto)               │  │
 │  │                                               │  │
@@ -27,8 +29,8 @@ Infrastructure IA locale sous Ubuntu avec GPU NVIDIA.
 ```
 
 Ollama tourne sur l'hôte pour un accès GPU direct et optimal.
-llama.cpp tourne dans Docker avec accès GPU NVIDIA et sert les modèles `.gguf` via une API compatible OpenAI.
-OpenWebUI agrège les deux backends.
+llama.cpp et Qwen3.8-27B sont deux backends GPU alternatifs — ils partagent la VRAM et ne peuvent pas tourner simultanément.
+Hermes et OpenWebUI se connectent au backend actif.
 Tous les ports sont liés à `127.0.0.1` (accès local uniquement).
 
 ## Prérequis
