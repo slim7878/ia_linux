@@ -132,8 +132,8 @@ docker compose --profile comfyui up -d
 # Whisper (transcription audio)
 docker compose --profile whisper up -d
 
-# Qwen3.8-27B (voir section dédiée ci-dessous)
-docker compose --profile qwen38 up -d
+# Qwen3.8-27B (voir section dédiée ci-dessous — incompatible avec llamacpp)
+docker compose --profile qwen38 up -d qwen38
 
 # Plusieurs profils en même temps
 docker compose --profile comfyui --profile whisper up -d
@@ -160,7 +160,7 @@ Le container télécharge le modèle depuis Hugging Face et le requantize à la 
 docker stop llamacpp
 
 # 2. Lancer qwen38 (premier démarrage long)
-docker compose --profile qwen38 up -d
+docker compose --profile qwen38 up -d qwen38
 
 # 3. Suivre le téléchargement / la requantization
 docker logs -f qwen38
@@ -221,6 +221,7 @@ docker compose up -d llamacpp openwebui hermes
 | Hermes Agent | Docker | Non |
 | OpenWebUI | Docker | Non |
 | Watchtower | Docker | Non |
+| Qwen3.8-27B (vLLM) | Docker (optionnel, exclusif avec llamacpp) | Oui |
 | ComfyUI | Docker (optionnel) | Oui |
 | Whisper | Docker (optionnel) | Oui |
 
