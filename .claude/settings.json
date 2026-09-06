@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(nvidia-smi)",
+      "Read(.env*)",
+      "Edit(.env*)"
+    ]
+  }
+}
